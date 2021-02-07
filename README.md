@@ -9,19 +9,24 @@ The objective of this project is to estimate the state of a moving object with n
 
 **Measurement Noise:** The uncertainty in *sensor measurement*, represented as <img src="https://latex.codecogs.com/gif.latex?\mathit{\omega}"/>, is a gaussian distribution with mean zero and covariance R  <img src="https://latex.codecogs.com/gif.latex?\[\omega \sim N(0,R)\]"/>
 
-We use linear motion model to estimate the new position and velocity:
-<img src="https://latex.codecogs.com/gif.latex?\\\acute{p_x} = {p_x} + {v_x}\Delta T + \nu_p_x\"/>
 
-<img src="https://latex.codecogs.com/gif.latex?\\\acute{p_y} = {p_y} + {v_y}\Delta T + \nu_p_y\"/>
 
-<img src="https://latex.codecogs.com/gif.latex?\\\acute{v_x} = {v_x} + {v_y}\Delta T + \nu_v_x\"/>
+**Process covariance matrix - Q**
 
-<img src="https://latex.codecogs.com/gif.latex?\\\acute{p_x} = {v_y} + {v_y}\Delta T + \nu_v_y\"/>
+**State transition matrix - F**
 
-**Process covariance matrix**
+Based on the **kinematics equations** of an object in motion, the new 2D position and 2D velocity can be estimated with the following equations:<br>
+<img src="https://latex.codecogs.com/gif.latex?\\\acute{p_x} = {p_x} + {v_x}\Delta t + \frac{a_{x}\Delta t ^2}{2}\"/> <br>
+<img src="https://latex.codecogs.com/gif.latex?\\\acute{p_y} = {p_y} + {v_y}\Delta t + \frac{a_{y}\Delta t ^2}{2}\"/> <br>
+The velocity along x and y directions remains the same. <br>
+<img src="https://latex.codecogs.com/gif.latex?\\\acute{v_x} = {v_x} + {a_x}\Delta t\"/><br>
+<img src="https://latex.codecogs.com/gif.latex?\\\acute{p_x} = {v_y} + {a_y}\Delta t\"/><br>
 
-**State transition matrix**
-<img src="https://latex.codecogs.com/gif.latex?\\\begin{pmatrix}\acute{p_x} \\ \acute{p_y} \\ \acute{v_x} \\ \acute{v_y} \end{pmatrix} = \begin{pmatrix} 1 & 0 & \Delta T & 0 \\ 0 & 1 & 0 & \Delta T\\ 0 & 0 & 1 & 0\\ 0 & 0 & 0 & 1 \end{pmatrix} \begin{pmatrix}p_x\\p_y\\v_x\\v_y\end{pmatrix} + \begin{pmatrix}\nu_p_x\\\nu_p_y\\\nu_v_x\\\nu_v_y\end{pmatrix}\"/>
+where <img src="https://latex.codecogs.com/gif.latex?\\{a_x}"/> and <img src="https://latex.codecogs.com/gif.latex?\\{a_y}"/> are random acceleration vectors with mean 0 and standard deviations  <img src="https://latex.codecogs.com/gif.latex?\sigma_{a_x}^{2}"/> and <img src="https://latex.codecogs.com/gif.latex?\sigma_{a_y}^{2}"/> respectively.
+
+Based on the above noise vector, the complete noise variance matrix Q is :
+
+<img src="https://latex.codecogs.com/gif.latex?\\Q = \begin{pmatrix} \frac{\Delta t ^2}{4}\sigma_{a_x}^{2} & 0 & \frac{\Delta t ^3}{2}\sigma_{a_x}^{2} & 0 \\ 0 & \frac{\Delta t ^2}{4}\sigma_{a_y}^{2} & 0 & \frac{\Delta t ^3}{2}\sigma_{a_y}^{2}\\ \frac{\Delta t ^3}{2}\sigma_{a_x}^{2} & 0 & {\Delta t ^2}\sigma_{a_x}^{2} & 0\\ 0 & \frac{\Delta t ^3}{2}\sigma_{a_y}^{2} & 0 & {\Delta t ^2}\sigma_{a_y}^{2} \end{pmatrix}\"/>
 
 
 
