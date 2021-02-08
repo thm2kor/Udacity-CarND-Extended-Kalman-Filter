@@ -16,11 +16,11 @@ The objective of this project is to estimate the state of a moving object with n
 **State transition matrix - F**
 
 Based on the **kinematics equations** of an object in motion, the new 2D position and 2D velocity can be estimated with the following equations:<br>
-<img src="https://latex.codecogs.com/gif.latex?\\\acute{p_x} = {p_x}+{v_x}\Delta t+\frac{a_{x}\Delta t ^2}{2}\"/> <br>
-<img src="https://latex.codecogs.com/gif.latex?\\\acute{p_y} = {p_y}+{v_y}\Delta t+\frac{a_{y}\Delta t ^2}{2}\"/> <br>
+<img src="https://latex.codecogs.com/gif.latex?\acute{p_x}={p_x}&plus;{v_x}\Delta&space;t&plus;\frac{a_{x}\Delta&space;t&space;^2}{2}"/><br>
+<img src="https://latex.codecogs.com/gif.latex?\acute{p_y}={p_y}&plus;{v_y}\Delta&space;t&plus;\frac{a_{y}\Delta&space;t&space;^2}{2}"/><br>
 The velocity along x and y directions remains the same. <br>
-<img src="https://latex.codecogs.com/gif.latex?\\\acute{v_x} = {v_x}+{a_x}\Delta t\"/><br>
-<img src="https://latex.codecogs.com/gif.latex?\\\acute{p_x} = {v_y}+{a_y}\Delta t\"/><br>
+<img src="https://latex.codecogs.com/gif.latex?\acute{v_x}={v_x}&plus;{a_x}\Delta&space;t"/><br>
+<img src="https://latex.codecogs.com/gif.latex?\acute{v_y}={v_y}&plus;{a_y}\Delta&space;t"/><br>
 
 where <img src="https://latex.codecogs.com/gif.latex?\\{a_x}"/> and <img src="https://latex.codecogs.com/gif.latex?\\{a_y}"/> are random acceleration vectors with mean 0 and standard deviations  <img src="https://latex.codecogs.com/gif.latex?\sigma_{a_x}^{2}"/> and <img src="https://latex.codecogs.com/gif.latex?\sigma_{a_y}^{2}"/> respectively.
 
