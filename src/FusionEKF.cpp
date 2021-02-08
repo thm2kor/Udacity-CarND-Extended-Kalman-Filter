@@ -39,14 +39,14 @@ FusionEKF::FusionEKF() {
   H_laser_ << 1, 0, 0, 0,
                0, 1, 0, 0;
 
-  ekf_.P_ = MatrixXd(4, 4)
+  ekf_.P_ = MatrixXd(4, 4);
   ekf_.P_ << 1, 0, 0, 0,
              0, 1, 0, 0,
              0, 0, 1000, 0,
              0, 0, 0, 1000;
 
-  noise_ax = 9;
-  noise_ay = 9;
+  double noise_ax = 9.0; // recommended in project instructions
+  double noise_ay = 9.0; // recommended in project instructions
 }
 
 /**
@@ -95,34 +95,44 @@ void FusionEKF::ProcessMeasurement(const MeasurementPackage &measurement_pack) {
   }
 
   /**
-   * Prediction
+   * Prediction Step
    */
+   // compute the time elapsed between the current and previous measurements
+    // dt - expressed in seconds
+    float dt = (measurement_pack.timestamp_ - previous_timestamp_) / 1000000.0;
+    previous_timestamp_ = measurement_pack.timestamp_;
+
+    // Initialize the state transition Matrix - F
+    ekf_.F_ << 1, 0, dt, 0,
+              0, 1, 0, dt,
+              0, 0, 1, 0,
+              0, 0, 0, 1;
+    // Initialize the process covariance Matrix - Q
+    ekf_.Q_ = MatrixXd(4, 4);
+    ekf_.Q_ << (pow(dt,4)/4)*noise_ax, 0, (pow(dt,3)/2)*noise_ax, 0,
+            0, (pow(dt,4)/4)*noise_ay, 0, (pow(dt,3)/2)*noise_ay,
+            (pow(dt,3)/2)*noise_ax, 0, pow(dt,2)*noise_ax, 0,
+            0, (pow(dt,3)/2)*noise_ay, 0, pow(dt,2)*noise_ay;
+    //
+    ekf_.Predict();
 
   /**
-   * TODO: Update the state transition matrix F according to the new elapsed time.
-   * Time is measured in seconds.
-   * TODO: Update the process noise covariance matrix.
-   * Use noise_ax = 9 and noise_ay = 9 for your Q matrix.
-   */
-
-  ekf_.Predict();
-
-  /**
-   * Update
-   */
-
-  /**
-   * TODO:
-   * - Use the sensor type to perform the update step.
-   * - Update the state and covariance matrices.
+   * Update Step
    */
 
   if (measurement_pack.sensor_type_ == MeasurementPackage::RADAR) {
-    // TODO: Radar updates
 
+    ekf_.H_ = tools.CalculateJacobian(ekf_.x_);
+    ekf_.R_ = R_radar_;
+    // Non-linear measurement function for radar. Use Extended Kalman filter
+    ekf_.UpdateEKF(measurement_pack.raw_measurements_);
   } else {
     // TODO: Laser updates
-
+    ekf_.H_ = H_laser_;
+    ekf_.R_ = R_laser_;
+    // The measurement update for lidar will use the regular Kalman filter
+    // equations, since lidar uses linear model in the prediction step.
+    ekf_.Update(measurement_pack.raw_measurements_);
   }
 
   // print the output
