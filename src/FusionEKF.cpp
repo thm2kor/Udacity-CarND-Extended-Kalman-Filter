@@ -18,22 +18,24 @@ FusionEKF::FusionEKF() {
   previous_timestamp_ = 0;
 
   // initializing matrices
-  R_laser_ = MatrixXd(2, 2); //measurement covariance matrix - laser
-  R_radar_ = MatrixXd(3, 3); //measurement covariance matrix - radar
-  H_laser_ = MatrixXd(2, 4); //measurement function matrix - Laser
-  Hj_ = MatrixXd(3, 4); // partial derivate of h(x)
+  R_laser_ = MatrixXd(2, 2);
+  R_radar_ = MatrixXd(3, 3);
+  H_laser_ = MatrixXd(2, 4);
+  Hj_ = MatrixXd(3, 4);
 
+  //measurement covariance matrix - laser
   R_laser_ << 0.0225, 0,
               0, 0.0225;
 
+  //measurement covariance matrix - radar
   R_radar_ << 0.09, 0, 0,
               0, 0.0009, 0,
               0, 0, 0.09;
 
+
   H_laser_ << 1, 0, 0, 0,
               0, 1, 0, 0;
 
-  //process covariance matrix
   ekf_.P_ = MatrixXd(4, 4);
   ekf_.P_ << 1, 0, 0, 0,
              0, 1, 0, 0,
@@ -97,6 +99,7 @@ void FusionEKF::ProcessMeasurement(const MeasurementPackage &measurement_pack) {
   float dt = (measurement_pack.timestamp_ - previous_timestamp_) / 1000000.0;
   previous_timestamp_ = measurement_pack.timestamp_;
   // Initialize the state transition Matrix - F
+  ekf_.F_ = MatrixXd(4,4);
   ekf_.F_ << 1, 0, dt, 0,
             0, 1, 0, dt,
             0, 0, 1, 0,
