@@ -26,8 +26,7 @@ where <img src="https://latex.codecogs.com/gif.latex?\\{a_x}"/> and <img src="ht
 
 Based on the above noise vector, the complete noise variance matrix Q is :
 
-<img src="https://latex.codecogs.com/gif.latex?\\Q=\begin{pmatrix}\frac{\Delta t ^2}{4}\sigma_{a_x}^{2} & 0 & \frac{\Delta t ^3}{2}\sigma_{a_x}^{2} & 0 \\ 0 & \frac{\Delta t ^2}{4}\sigma_{a_y}^{2} & 0 & \frac{\Delta t ^3}{2}\sigma_{a_y}^{2}\\ \frac{\Delta t ^3}{2}\sigma_{a_x}^{2} & 0 & {\Delta t ^2}\sigma_{a_x}^{2} & 0\\ 0 & \frac{\Delta t ^3}{2}\sigma_{a_y}^{2} & 0 & {\Delta t^2}\sigma_{a_y}^{2} \end{pmatrix}\"/><br>
-
+<img src="https://latex.codecogs.com/gif.latex?Q=\begin{pmatrix}\frac{\Delta&space;t&space;^2}{4}\sigma_{a_x}^{2}&space;&&space;0&space;&&space;\frac{\Delta&space;t&space;^3}{2}\sigma_{a_x}^{2}&space;&&space;0&space;\\&space;0&space;&&space;\frac{\Delta&space;t&space;^2}{4}\sigma_{a_y}^{2}&space;&&space;0&space;&&space;\frac{\Delta&space;t&space;^3}{2}\sigma_{a_y}^{2}\\&space;\frac{\Delta&space;t&space;^3}{2}\sigma_{a_x}^{2}&space;&&space;0&space;&&space;{\Delta&space;t&space;^2}\sigma_{a_x}^{2}&space;&&space;0\\&space;0&space;&&space;\frac{\Delta&space;t&space;^3}{2}\sigma_{a_y}^{2}&space;&&space;0&space;&&space;{\Delta&space;t^2}\sigma_{a_y}^{2}&space;\end{pmatrix}"/>
 
 **H matrix** projects the belief about the object's current state into the measurement space of the sensor.
 
