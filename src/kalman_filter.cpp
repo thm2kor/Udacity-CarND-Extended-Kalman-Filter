@@ -30,9 +30,16 @@ void KalmanFilter::Predict() {
 }
 
 void KalmanFilter::Update(const VectorXd &z) {
-  /**
-   * TODO: update the state by using Kalman Filter equations
-   */
+  // calculate error
+  VectorXd y = z - (H_ * x_);
+  // projecting the system uncertainty into the measurement space + meas noise
+  MatrixXd S = (H_ * P_ * H_.transpose()) + R_;
+  // calculate Kalman Gain
+  MatrixXd K = P_ * H_.transpose() * S.inverse();
+  // update positions and covariance matrix
+  x_ = x_ + (K * y);
+  MatrixXd I = MatrixXd::Identity(x_.size(), x_.size());
+  P_ = (I - (K * H_)) * P_;
 }
 
 void KalmanFilter::UpdateEKF(const VectorXd &z) {
