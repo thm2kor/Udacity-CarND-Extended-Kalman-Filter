@@ -22,7 +22,6 @@ void KalmanFilter::Init(VectorXd &x_in, MatrixXd &P_in, MatrixXd &F_in,
   H_ = H_in;
   R_ = R_in;
   Q_ = Q_in;
-  I_ = MatrixXd::Identity(x_.size(), x_.size());
 }
 
 void KalmanFilter::Predict() {
@@ -41,6 +40,7 @@ void KalmanFilter::Update(const VectorXd &z) {
   MatrixXd K = P_ * H_.transpose() * S.inverse();
   // update positions and covariance matrix
   x_ = x_ + (K * y);
+  MatrixXd I = MatrixXd::Identity(x_.size(), x_.size());
   P_ = (I - (K * H_)) * P_;
 }
 
@@ -76,6 +76,7 @@ void KalmanFilter::UpdateEKF(const VectorXd &z) {
   MatrixXd K = P_ * H_.transpose() * S.inverse();
   // update positions and covariance matrix
   x_ = x_ + (K * y);
+  MatrixXd I = MatrixXd::Identity(x_.size(), x_.size());
   P_ = (I - (K * H_)) * P_;
 
 }
