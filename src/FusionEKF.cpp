@@ -18,29 +18,27 @@ FusionEKF::FusionEKF() {
   previous_timestamp_ = 0;
 
   // initializing matrices
-  R_laser_ = MatrixXd(2, 2);
-  R_radar_ = MatrixXd(3, 3);
-  H_laser_ = MatrixXd(2, 4);
-  Hj_ = MatrixXd(3, 4);
+  R_laser_ = MatrixXd(2, 2); //measurement covariance matrix - laser
+  R_radar_ = MatrixXd(3, 3); //measurement covariance matrix - radar
+  H_laser_ = MatrixXd(2, 4); //measurement function matrix - Laser
+  Hj_ = MatrixXd(3, 4); // partial derivate of h(x)
 
-  //measurement covariance matrix - laser
   R_laser_ << 0.0225, 0,
               0, 0.0225;
 
-  //measurement covariance matrix - radar
   R_radar_ << 0.09, 0, 0,
               0, 0.0009, 0,
               0, 0, 0.09;
 
-
   H_laser_ << 1, 0, 0, 0,
-  				0, 1, 0, 0;
+              0, 1, 0, 0;
 
+  //process covariance matrix
   ekf_.P_ = MatrixXd(4, 4);
   ekf_.P_ << 1, 0, 0, 0,
-    		0, 1, 0, 0,
-    		0, 0, 1000, 0,
-    		0, 0, 0, 1000;
+             0, 1, 0, 0,
+             0, 0, 1000, 0,
+             0, 0, 0, 1000;
 
   noise_ax = 9.0; // recommended in project instructions
   noise_ay = 9.0; // recommended in project instructions
@@ -56,12 +54,6 @@ void FusionEKF::ProcessMeasurement(const MeasurementPackage &measurement_pack) {
    * Initialization
    */
   if (!is_initialized_) {
-    /**
-     * TODO: Initialize the state ekf_.x_ with the first measurement.
-     * TODO: Create the covariance matrix.
-     * You'll need to convert radar from polar to cartesian coordinates.
-     */
-
     // first measurement
     cout << "EKF: " << endl;
     ekf_.x_ = VectorXd(4);
@@ -127,7 +119,7 @@ void FusionEKF::ProcessMeasurement(const MeasurementPackage &measurement_pack) {
     ekf_.UpdateEKF(measurement_pack.raw_measurements_);
 
   } else {
-	ekf_.H_ = H_laser_;
+    ekf_.H_ = H_laser_;
     ekf_.R_ = R_laser_;
     // The measurement update for lidar will use the regular Kalman filter
     // equations, since lidar uses linear model in the prediction step.
