@@ -55,7 +55,7 @@ void FusionEKF::ProcessMeasurement(const MeasurementPackage &measurement_pack) {
    */
   if (!is_initialized_) {
     // first measurement
-    cout << "EKF: " << endl;
+    cout << "EKF: Init Routine" << endl;
     ekf_.x_ = VectorXd(4);
     ekf_.x_ << 1, 1, 1, 1;
 
@@ -74,12 +74,14 @@ void FusionEKF::ProcessMeasurement(const MeasurementPackage &measurement_pack) {
       // along the rays
       double ro_dot = measurement_pack.raw_measurements_[2];
       // Refer to the screenshot from class ../images/radar_measurement_paremeter.png
-      ekf_.x_ << ro*cos(phi), ro*cos(phi), ro_dot*cos(phi), ro_dot*sin(phi);
+      ekf_.x_ << ro*cos(phi), ro*sin(phi), ro_dot*cos(phi), ro_dot*sin(phi);
+      cout << "EKF: First measurement for RADAR" << endl;
     }
     else if (measurement_pack.sensor_type_ == MeasurementPackage::LASER) {
       // refer main.cpp for the indexing of the raw_measurements_ arrays for
       // radar and laser
       ekf_.x_ << measurement_pack.raw_measurements_[0], measurement_pack.raw_measurements_[1], 0, 0;
+      cout << "EKF: First measurement for LIDAR" << endl;
     }
 
     // done initializing, no need to predict or update
