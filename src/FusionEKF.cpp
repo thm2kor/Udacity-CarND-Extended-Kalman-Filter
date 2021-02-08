@@ -117,7 +117,6 @@ void FusionEKF::ProcessMeasurement(const MeasurementPackage &measurement_pack) {
     ekf_.R_ = R_radar_;
     // Non-linear measurement function for radar. Use Extended Kalman filter
     ekf_.UpdateEKF(measurement_pack.raw_measurements_);
-
   } else {
     ekf_.H_ = H_laser_;
     ekf_.R_ = R_laser_;

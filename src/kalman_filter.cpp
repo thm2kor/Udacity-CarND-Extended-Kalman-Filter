@@ -43,7 +43,38 @@ void KalmanFilter::Update(const VectorXd &z) {
 }
 
 void KalmanFilter::UpdateEKF(const VectorXd &z) {
-  /**
-   * TODO: update the state by using Extended Kalman Filter equations
-   */
+  VectorXd h = VectorXd(3);
+
+  float px = x_(0);
+  float py = x_(1);
+  float vx = x_(2);
+  float vy = x_(3);
+
+  double ro = sqrt((px*px) + (py*py));
+  double ro_dot = ((px*vx) + (py*vy)) / ro;
+  double theta = atan2(py,px);
+
+  h << ro, theta, ro_dot;
+
+  //calculate error
+  VectorXd y = z - h;
+
+  // normalize theta between pi and -pi
+  // logic suggestion from mentors
+  while (y(1) < - M_PI ){
+    y(1) = y(1) + 2.0*M_PI ;
+  }
+  while(y(1) > M_PI ){
+    y(1) = y(1) - 2.0*M_PI ;
+  }
+
+  // projecting the system uncertainty into the measurement space + meas noise
+  MatrixXd S = (H_ * P_ * H_.transpose()) + R_;
+  // calculate Kalman Gain
+  MatrixXd K = P_ * H_.transpose() * S.inverse();
+  // update positions and covariance matrix
+  x_ = x_ + (K * y);
+  MatrixXd I = MatrixXd::Identity(x_.size(), x_.size());
+  P_ = (I - (K * H_)) * P_;
+
 }
