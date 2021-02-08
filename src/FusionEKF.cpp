@@ -36,8 +36,17 @@ FusionEKF::FusionEKF() {
    * TODO: Finish initializing the FusionEKF.
    * TODO: Set the process and measurement noises
    */
+  H_laser_ << 1, 0, 0, 0,
+               0, 1, 0, 0;
 
+  ekf_.P_ = MatrixXd(4, 4)
+  ekf_.P_ << 1, 0, 0, 0,
+             0, 1, 0, 0,
+             0, 0, 1000, 0,
+             0, 0, 0, 1000;
 
+  noise_ax = 9;
+  noise_ay = 9;
 }
 
 /**
@@ -50,25 +59,34 @@ void FusionEKF::ProcessMeasurement(const MeasurementPackage &measurement_pack) {
    * Initialization
    */
   if (!is_initialized_) {
-    /**
-     * TODO: Initialize the state ekf_.x_ with the first measurement.
-     * TODO: Create the covariance matrix.
-     * You'll need to convert radar from polar to cartesian coordinates.
-     */
+     // Initialization of co-variance matrix is moved to constructor to
+     // avoid multiple initialization of the process covariance matrix P_.
 
     // first measurement
     cout << "EKF: " << endl;
     ekf_.x_ = VectorXd(4);
     ekf_.x_ << 1, 1, 1, 1;
-
+    previous_timestamp_ = measurement_pack.timestamp_;
     if (measurement_pack.sensor_type_ == MeasurementPackage::RADAR) {
-      // TODO: Convert radar from polar to cartesian coordinates 
-      //         and initialize state.
-
+      // refer main.cpp for the indexing of the raw_measurements_ arrays for
+      // radar and laser
+      // The range, (rho), is the radial distance to the pedestrian.
+      // The range is basically the magnitude of the position vector
+      // which can be defined as sqrt(p_x^2 + p_y^2)
+      double ro = measurement_pack.raw_measurements_[0];
+      // The angle (phi) between the ray and the vehicle x direction
+      // which is along the direction of movement of vehicle
+      double phi = measurement_pack.raw_measurements_[1];
+      // range rate rho_dot is the radial velocity is the velocity
+      // along the rays
+      double ro_dot = measurement_pack.raw_measurements_[2];
+      // Refer to the screenshot from class ../images/radar_measurement_paremeter.png
+      ekf_.x_ << ro*cos(phi), ro*cos(phi), ro_dot*cos(phi), ro_dot*sin(phi);
     }
     else if (measurement_pack.sensor_type_ == MeasurementPackage::LASER) {
-      // TODO: Initialize state.
-
+      // refer main.cpp for the indexing of the raw_measurements_ arrays for
+      // radar and laser
+      ekf_.x_ << measurement_pack.raw_measurements_[0], measurement_pack.raw_measurements_[1], 0, 0;
     }
 
     // done initializing, no need to predict or update
