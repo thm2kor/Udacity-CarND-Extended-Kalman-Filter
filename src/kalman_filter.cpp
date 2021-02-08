@@ -52,9 +52,9 @@ void KalmanFilter::UpdateEKF(const VectorXd &z) {
   float vx = x_(2);
   float vy = x_(3);
 
-  double ro = sqrt((px*px) + (py*py));
-  double ro_dot = ((px*vx) + (py*vy)) / ro;
-  double theta = atan2(py,px);
+  float ro = sqrt((px*px) + (py*py));
+  float ro_dot = ((px*vx) + (py*vy)) / ro;
+  float theta = atan2(py,px);
 
   pred << ro, theta, ro_dot;
 
@@ -63,11 +63,11 @@ void KalmanFilter::UpdateEKF(const VectorXd &z) {
 
   // normalize theta values between pi and -pi
   // idea taken over from the discussion forum
-  while (y(1) < - M_PI ){
-    y(1) = y(1) + 2.0*M_PI ;
+  while (y(1) < -M_PI) {
+    y(1) = y(1) + 2.0*M_PI;
   }
-  while(y(1) > M_PI ){
-    y(1) = y(1) - 2.0*M_PI ;
+  while (y(1) > M_PI) {
+    y(1) = y(1) - 2.0*M_PI;
   }
 
   // projecting the system uncertainty into the measurement space + meas noise
