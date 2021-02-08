@@ -22,6 +22,7 @@ void KalmanFilter::Init(VectorXd &x_in, MatrixXd &P_in, MatrixXd &F_in,
   H_ = H_in;
   R_ = R_in;
   Q_ = Q_in;
+  I_ = MatrixXd::Identity(x_.size(), x_.size());
 }
 
 void KalmanFilter::Predict() {
@@ -40,12 +41,11 @@ void KalmanFilter::Update(const VectorXd &z) {
   MatrixXd K = P_ * H_.transpose() * S.inverse();
   // update positions and covariance matrix
   x_ = x_ + (K * y);
-  MatrixXd I = MatrixXd::Identity(x_.size(), x_.size());
   P_ = (I - (K * H_)) * P_;
 }
 
 void KalmanFilter::UpdateEKF(const VectorXd &z) {
-  VectorXd h = VectorXd(3);
+  VectorXd pred = VectorXd(3);
 
   float px = x_(0);
   float py = x_(1);
@@ -56,13 +56,13 @@ void KalmanFilter::UpdateEKF(const VectorXd &z) {
   double ro_dot = ((px*vx) + (py*vy)) / ro;
   double theta = atan2(py,px);
 
-  h << ro, theta, ro_dot;
+  pred << ro, theta, ro_dot;
 
   //calculate error
-  VectorXd y = z - h;
+  VectorXd y = z - pred;
 
-  // normalize theta between pi and -pi
-  // logic suggestion from mentors
+  // normalize theta values between pi and -pi
+  // idea taken over from the discussion forum
   while (y(1) < - M_PI ){
     y(1) = y(1) + 2.0*M_PI ;
   }
@@ -76,7 +76,6 @@ void KalmanFilter::UpdateEKF(const VectorXd &z) {
   MatrixXd K = P_ * H_.transpose() * S.inverse();
   // update positions and covariance matrix
   x_ = x_ + (K * y);
-  MatrixXd I = MatrixXd::Identity(x_.size(), x_.size());
   P_ = (I - (K * H_)) * P_;
 
 }
