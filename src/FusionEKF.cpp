@@ -49,8 +49,8 @@ FusionEKF::FusionEKF() {
              0, 0, 1, 0,
              0, 0, 0, 1;
 
-  noise_ax = 9.0; // recommended in project instructions
-  noise_ay = 9.0; // recommended in project instructions
+  noise_ax_ = 9.0; // recommended in project instructions
+  noise_ay_ = 9.0; // recommended in project instructions
 }
 
 /**
@@ -109,10 +109,10 @@ void FusionEKF::ProcessMeasurement(const MeasurementPackage &measurement_pack) {
 
   // Initialize the process covariance Matrix - Q
   ekf_.Q_ = MatrixXd(4, 4);
-  ekf_.Q_ << (pow(dt,4)/4)*noise_ax, 0, (pow(dt,3)/2)*noise_ax, 0,
-            0, (pow(dt,4)/4)*noise_ay, 0, (pow(dt,3)/2)*noise_ay,
-            (pow(dt,3)/2)*noise_ax, 0, pow(dt,2)*noise_ax, 0,
-            0, (pow(dt,3)/2)*noise_ay, 0, pow(dt,2)*noise_ay;
+  ekf_.Q_ << (pow(dt,4)/4)*noise_ax_, 0, (pow(dt,3)/2)*noise_ax_, 0,
+            0, (pow(dt,4)/4)*noise_ay_, 0, (pow(dt,3)/2)*noise_ay_,
+            (pow(dt,3)/2)*noise_ax_, 0, pow(dt,2)*noise_ax_, 0,
+            0, (pow(dt,3)/2)*noise_ay_, 0, pow(dt,2)*noise_ay_;
   // Predict the next state
   ekf_.Predict();
 

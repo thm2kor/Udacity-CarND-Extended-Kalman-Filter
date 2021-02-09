@@ -35,8 +35,8 @@ class FusionEKF {
   // check whether the tracking toolbox was initialized or not (first measurement)
   bool is_initialized_;
   // acceleration noise components
-  double noise_ax;
-  double noise_ay;
+  double noise_ax_;
+  double noise_ay_;
   // previous timestamp
   long long previous_timestamp_;
 
