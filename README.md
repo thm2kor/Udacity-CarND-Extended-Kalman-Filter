@@ -6,6 +6,9 @@
 
 [image1]: ./images/radar_measurement_parameters.png "radar measurement parameter"
 [image2]: ./images/linear_approximation.png "linear approximation"
+[image3]: ./images/result_dataset1.gif "results on dataset1"
+[image4]: ./images/result_dataset2.gif "results on dataset2"
+
 The objective of this project is to estimate the state of a moving object with noisy measurements from lidar and radar sensors. The state of the moving object is represented by two dimensional position p<sub>x</sub>, p<sub>y</sub> and two dimensional velocity v<sub>x</sub>, v<sub>y</sub>. The **state vector** <img src="https://latex.codecogs.com/gif.latex?\mathit{x}"/> is therefore:
 <img src="https://latex.codecogs.com/gif.latex?\begin{pmatrix}p_x\\p_y\\v_x\\v_y\end{pmatrix}"/>
 
@@ -119,3 +122,6 @@ VectorXd Tools::CalculateRMSE(const vector<VectorXd> &estimations,
 ```
 
 ## Final results
+The results on dataset1 and dataset2 are shown below:
+![result_dataset1][image3]
+![result_dataset2][image4]
