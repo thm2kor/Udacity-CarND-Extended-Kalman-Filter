@@ -9,15 +9,14 @@
 The objective of this project is to estimate the state of a moving object with noisy measurements from lidar and radar sensors. The state of the moving object is represented by two dimensional position p<sub>x</sub>, p<sub>y</sub> and two dimensional velocity v<sub>x</sub>, v<sub>y</sub>. The **state vector** <img src="https://latex.codecogs.com/gif.latex?\mathit{x}"/> is therefore:
 <img src="https://latex.codecogs.com/gif.latex?\begin{pmatrix}p_x\\p_y\\v_x\\v_y\end{pmatrix}"/>
 
-Udacity provided simula
-ted radar and lidar measurements from a bicycle that moves around the target vehicle. In addition, Udacity also provided a software framework which :
+Udacity provided simulated radar and lidar measurements from a bicycle that moves around the target vehicle. In addition, Udacity also provided a software framework which :
 1. Reads in the data (sensor values as well as ground truth) from the simulator
 2. Encapsulates the data into instances of class *MeasurementPackage*
 3. Provide a SW design with entry points to:
- - Initialize Kalman filter matrices and variables
- - Predict where the cyclist is going to be after a time step
- - Update where the cyclist is based on sensor measurements
- - Measure how the Kalman filter performs by calculating the root mean squared error
+  - Initialize Kalman filter matrices and variables
+  - Predict where the cyclist is going to be after a time step
+  - Update where the cyclist is based on sensor measurements
+  - Measure how the Kalman filter performs by calculating the root mean squared error
 4. Returns the results back to the simulator
 
 The actual contribution of the project is the Step 3, where the standard and extended Kalman Filter functions for predicting and updating the data from Lidar and Radar respectively are implemented.
@@ -26,7 +25,7 @@ The actual contribution of the project is the Step 3, where the standard and ext
 
 ## Kalman Filter
 To track the cyclist around the vehicle, it is required to define a :
-1. *State Transition function* that models how the state of the cyclist is changes between two sensor timestamps.
+1. *State Transition function* that models how the state of the cyclist changes between two sensor timestamps.
 2. *Measurement function* that models how the measurement is calculated and how close it is to the predicted state.
 
 ### State Transition function
@@ -91,7 +90,7 @@ The next step in the measurement process is to calculate the difference between 
 <img src="https://latex.codecogs.com/gif.latex?{y}={z}{-}{H}{x}"/> <br>
 
 #### Calculate Kalman Gain
-The **K** matrix, referred to as the Kalman filter gain, combines the uncertainty of where we think we are **P′** with the uncertainty of the sensor measurement **R**. The R matrix are generally provided by sensor suppliers. For the current project, the R values were provided by Udacity.
+The **K** matrix, referred to as the Kalman filter gain, combines the uncertainty of the prediction (**P′**) with the uncertainty of the sensor measurement **R**. The R matrix are generally provided by sensor suppliers. For the current project, the R values were provided by Udacity.
 ```c++
 //measurement covariance matrix - laser
 R_laser_ << 0.0225, 0,
@@ -110,3 +109,13 @@ With the Kalman gain and the error components, the new state and the uncertainty
 
 <img src="https://latex.codecogs.com/gif.latex?{x}={x}'&plus;{K}{y}"/> <br>
 <img src="https://latex.codecogs.com/gif.latex?{P}=\left&space;({I}{-}{K}{H}\right&space;){P}'"/>
+
+## Evaluate Performance
+The Root Mean Squared Error (RMSE) method is used to evaluate the performance of the Kalman filter by measuring the deviation of the estimated state from the ground truth. The lower the RMSE, the higher is the accuracy.
+The performance evaluation is done in the `tools.cpp`. The code is taken over as-is from the class notes.
+```c++
+VectorXd Tools::CalculateRMSE(const vector<VectorXd> &estimations,
+                              const vector<VectorXd> &ground_truth)
+```
+
+## Final results
