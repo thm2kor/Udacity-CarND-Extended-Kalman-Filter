@@ -4,8 +4,8 @@
 
 [//]: # (Image References)
 
-[image1]: ./images/radar_measurement_paremeter.png "radar measurement parameter"
-
+[image1]: ./images/radar_measurement_parameters.png "radar measurement parameter"
+[image2]: ./images/linear_approximation.png "linear approximation"
 The objective of this project is to estimate the state of a moving object with noisy measurements from lidar and radar sensors. The state of the moving object is represented by two dimensional position p<sub>x</sub>, p<sub>y</sub> and two dimensional velocity v<sub>x</sub>, v<sub>y</sub>. The **state vector** <img src="https://latex.codecogs.com/gif.latex?\mathit{x}"/> is therefore:
 <img src="https://latex.codecogs.com/gif.latex?\begin{pmatrix}p_x\\p_y\\v_x\\v_y\end{pmatrix}"/>
 
@@ -38,8 +38,6 @@ Based on the **kinematics equations** of an object in motion, the new 2D positio
 
 where <img src="https://latex.codecogs.com/gif.latex?\\{a_x}"/> and <img src="https://latex.codecogs.com/gif.latex?\\{a_y}"/> are random acceleration vectors with mean 0 and standard deviations  <img src="https://latex.codecogs.com/gif.latex?\sigma_{a_x}^{2}"/> and <img src="https://latex.codecogs.com/gif.latex?\sigma_{a_y}^{2}"/> respectively. In the project , both values are configured as **9.0**.
 
-![radar_measurement_parameter][image1]
-
 The state transition function shown above consists of deterministic part as well as stochastic part represented by the random acceleration vectors. A generalized version of the state transition function is shown below:
 
 <img src="https://latex.codecogs.com/gif.latex?\begin{pmatrix}p_x'\\p_y'\\v_x'\\v_y'\end{pmatrix}=\begin{pmatrix}1&0&\Delta&space;t&0\\0&1&0&\Delta&space;t\\0&0&1&0\\0&0&0&1\end{pmatrix}&space;\begin{pmatrix}p_x\\p_y\\v_x\\v_y\end{pmatrix}&space;&plus;&space;\begin{pmatrix}\frac{a_{x}\Delta&space;t&space;^2}{2}\\\frac{a_{y}\Delta&space;t&space;^2}{2}\\a_{x}\Delta&space;t\\a_{y}\Delta&space;t\end{pmatrix}"/>
@@ -59,17 +57,34 @@ represents this change in uncertainty. The noise variance matrix Q is calculated
 <img src="https://latex.codecogs.com/gif.latex?Q=\begin{pmatrix}\frac{\Delta&space;t&space;^2}{4}\sigma_{a_x}^{2}&space;&&space;0&space;&&space;\frac{\Delta&space;t&space;^3}{2}\sigma_{a_x}^{2}&space;&&space;0&space;\\&space;0&space;&&space;\frac{\Delta&space;t&space;^2}{4}\sigma_{a_y}^{2}&space;&&space;0&space;&&space;\frac{\Delta&space;t&space;^3}{2}\sigma_{a_y}^{2}\\&space;\frac{\Delta&space;t&space;^3}{2}\sigma_{a_x}^{2}&space;&&space;0&space;&&space;{\Delta&space;t&space;^2}\sigma_{a_x}^{2}&space;&&space;0\\&space;0&space;&&space;\frac{\Delta&space;t&space;^3}{2}\sigma_{a_y}^{2}&space;&&space;0&space;&&space;{\Delta&space;t^2}\sigma_{a_y}^{2}&space;\end{pmatrix}"/>
 
 ### Update step
-#### Define H matrix
-Lidar sensor measures only two of the four object states (p<sub>x</sub>, p<sub>y</sub>) , while Radar measures all the 4 object states. The **H** matrix projects the belief about the object's current state into the measurement space of the sensor. Multiplying H matrix with x, enables a one to one comparison with new sensor data , z.
+#### Define H matrix for Lidar
+Lidar sensor measures only two of the four object states (p<sub>x</sub>, p<sub>y</sub>). The **H** matrix projects the belief about the object's current state into the measurement space of the sensor. Multiplying H matrix with x, enables a one to one comparison with new sensor data , z.
 ```c++
 H_laser_ << 1, 0, 0, 0,
             0, 1, 0, 0;
 ```
-##### H Matrix for Radar
+##### Define H Matrix for Radar
 Incase of Radar sensors, the predicted position and speed are mapped to the polar coordinates of range, bearing and range rate.
-The range **ρ** , is the distance to the pedestrian.
-The range rate, rho_dot is the projection of the velocity, vv, onto the line, LL.
+![radar_measurement_parameter][image1]
+
+The range **ρ** , is the distance to the pedestrian. The bearing **φ** is the angle between ρ and the x-axis. The range rate,  is the projection of the velocity, v, onto the line, L. In a simplified form, the the **h function** that specifies how the predicted position and speed get mapped to the polar coordinates of range, bearing and range rate is given by the following equation:
+
 <img src="https://latex.codecogs.com/gif.latex?h(x')=\begin{pmatrix}\rho\\\phi\\\dot{\rho}\end{pmatrix}=\begin{pmatrix}\sqrt{{p'}_{x}^{2}&plus;{p'}_{y}^{2}}\\arctan(\frac{{p'}_{y}}{{p'}_{x}})\\\frac{{p'}_{x}{v'}_{x}&plus;{p'}_{y}{v'}_{y}}{\sqrt{{p'}_{x}^{2}&plus;{p'}_{y}^{2}}}\end{pmatrix}"/>
+
+The above matrix consists of non-linear function (Eg:arctan()).
+![linear_approximation][image2]
+
+In order to apply Gaussian distributions, this needs to be linearized by a linear function which is tangent to h at the mean location of the original gaussian distribution. This is done with the hep of multivariate Taylor series expansion. A general form of Taylor series expansion is:
+<img src="https://latex.codecogs.com/gif.latex?f(x)\approx&space;f(\mu)&plus;&space;\frac{\partial&space;f(\mu)&space;}{\partial&space;x}(x&space;-\mu)" /><br>
+
+As shown in the figure above, when the Taylor expansion is applied, the non-linear function is evaluated first at the mean location μ, followed by a extrapolation with the slope along μ. This slope is given by the first derivate of h, which is called the Jacobian matrix which contains the partial derivatives of H<sub>j</sub>:
+
+<img src="https://latex.codecogs.com/gif.latex?\Large&space;H_j&space;=&space;\begin{bmatrix}&space;\frac{\partial&space;\rho}{\partial&space;p_x}&space;&&space;\frac{\partial&space;\rho}{\partial&space;p_y}&space;&&space;\frac{\partial&space;\rho}{\partial&space;v_x}&space;&&space;\frac{\partial&space;\rho}{\partial&space;v_y}\\&space;\frac{\partial&space;\varphi}{\partial&space;p_x}&space;&&space;\frac{\partial&space;\varphi}{\partial&space;p_y}&space;&&space;\frac{\partial&space;\varphi}{\partial&space;v_x}&space;&&space;\frac{\partial&space;\varphi}{\partial&space;v_y}\\&space;\frac{\partial&space;\dot{\rho}}{\partial&space;p_x}&space;&&space;\frac{\partial&space;\dot{\rho}}{\partial&space;p_y}&space;&&space;\frac{\partial&space;\dot{\rho}}{\partial&space;v_x}&space;&&space;\frac{\partial&space;\dot{\rho}}{\partial&space;v_y}&space;\end{bmatrix}" title="\Large H_j = \begin{bmatrix} \frac{\partial \rho}{\partial p_x} & \frac{\partial \rho}{\partial p_y} & \frac{\partial \rho}{\partial v_x} & \frac{\partial \rho}{\partial v_y}\\ \frac{\partial \varphi}{\partial p_x} & \frac{\partial \varphi}{\partial p_y} & \frac{\partial \varphi}{\partial v_x} & \frac{\partial \varphi}{\partial v_y}\\ \frac{\partial \dot{\rho}}{\partial p_x} & \frac{\partial \dot{\rho}}{\partial p_y} & \frac{\partial \dot{\rho}}{\partial v_x} & \frac{\partial \dot{\rho}}{\partial v_y} \end{bmatrix}" /> <br>
+
+After calculating all the derivates, the final H<sub>j</sub> looks like :
+<img src="https://latex.codecogs.com/gif.latex?\Large&space;H_j&space;=&space;\begin{bmatrix}&space;\frac{p_x}{\sqrt[]{p_x^2&space;&plus;&space;p_y^2}}&space;&&space;\frac{p_y}{\sqrt[]{p_x^2&space;&plus;&space;p_y^2}}&space;&&space;0&space;&&space;0\\&space;-\frac{p_y}{p_x^2&space;&plus;&space;p_y^2}&space;&&space;\frac{p_x}{p_x^2&space;&plus;&space;p_y^2}&space;&&space;0&space;&&space;0\\&space;\frac{p_y(v_x&space;p_y&space;-&space;v_y&space;p_x)}{(p_x^2&space;&plus;&space;p_y^2)^{3/2}}&space;&&space;\frac{p_x(v_y&space;p_x&space;-&space;v_x&space;p_y)}{(p_x^2&space;&plus;&space;p_y^2)^{3/2}}&space;&&space;\frac{p_x}{\sqrt[]{p_x^2&space;&plus;&space;p_y^2}}&space;&&space;\frac{p_y}{\sqrt[]{p_x^2&space;&plus;&space;p_y^2}}\\&space;\end{bmatrix}" title="\Large H_j = \begin{bmatrix} \frac{p_x}{\sqrt[]{p_x^2 + p_y^2}} & \frac{p_y}{\sqrt[]{p_x^2 + p_y^2}} & 0 & 0\\ -\frac{p_y}{p_x^2 + p_y^2} & \frac{p_x}{p_x^2 + p_y^2} & 0 & 0\\ \frac{p_y(v_x p_y - v_y p_x)}{(p_x^2 + p_y^2)^{3/2}} & \frac{p_x(v_y p_x - v_x p_y)}{(p_x^2 + p_y^2)^{3/2}} & \frac{p_x}{\sqrt[]{p_x^2 + p_y^2}} & \frac{p_y}{\sqrt[]{p_x^2 + p_y^2}}\\ \end{bmatrix}" />
+
+The function `MatrixXd Tools::CalculateJacobian(const VectorXd& x_state)` performs this calculation. The code for the implementation is taken over from the class notes as-is.
 
 #### Calculate Error
 The next step in the measurement process is to calculate the difference between the predicted states from the previous step with what the sensor measurement says.
