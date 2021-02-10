@@ -32,7 +32,6 @@ FusionEKF::FusionEKF() {
               0, 0.0009, 0,
               0, 0, 0.09;
 
-
   H_laser_ << 1, 0, 0, 0,
               0, 1, 0, 0;
 
@@ -83,7 +82,6 @@ void FusionEKF::ProcessMeasurement(const MeasurementPackage &measurement_pack) {
       double ro_dot = measurement_pack.raw_measurements_[2];
       // Refer to the screenshot from class ../images/radar_measurement_paremeter.png
       ekf_.x_ << ro*cos(phi), ro*sin(phi), ro_dot*cos(phi), ro_dot*sin(phi);
-      cout << "EKF: First measurement for RADAR" << endl;
     }
     else if (measurement_pack.sensor_type_ == MeasurementPackage::LASER) {
       // refer main.cpp for the indexing of the raw_measurements_ arrays for
@@ -91,6 +89,13 @@ void FusionEKF::ProcessMeasurement(const MeasurementPackage &measurement_pack) {
       ekf_.x_ << measurement_pack.raw_measurements_[0], measurement_pack.raw_measurements_[1], 0, 0;
     }
 
+    // Handle very low values of states (Suggestion from project instructions)
+    // No low values (< 0.0001) seen in dataset 1 and dataset 2. So commenting out.
+    /*if (fabs(ekf_.x_(0)) < 0.0001 && fabs(ekf_.x_(1)) < 0.0001){
+      cout << "too low values" << endl;
+      ekf_.x_(0) = 0.0001;
+      ekf_.x_(1) = 0.0001;
+    }*/
     // done initializing, no need to predict or update
     is_initialized_ = true;
     return;
