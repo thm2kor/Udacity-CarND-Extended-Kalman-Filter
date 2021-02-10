@@ -29,18 +29,34 @@ string hasData(string s) {
   return "";
 }
 
-int main() {
+int main(int argc, char *argv[]) {
   uWS::Hub h;
 
   // Create a Kalman Filter instance
   FusionEKF fusionEKF;
 
+  //supporting ignore flags. Either Radar or Laser data can be blocked
+  bool ignore_radar = false;
+  bool ignore_laser = false;
+  if (argc == 2){
+    std::string ignore_flag = argv[1];
+    if (ignore_flag.compare("--no-radar") == 0){
+      std::cout << "Radar data will be ignored"<< std::endl;
+      ignore_radar = true;
+      ignore_laser = false;
+    }
+    if (ignore_flag.compare("--no-laser") == 0){
+      std::cout << "Laser data will be ignored"<< std::endl;
+      ignore_laser = true;
+      ignore_radar = false;
+    }
+  }
   // used to compute the RMSE later
   Tools tools;
   vector<VectorXd> estimations;
   vector<VectorXd> ground_truth;
 
-  h.onMessage([&fusionEKF,&tools,&estimations,&ground_truth]
+  h.onMessage([&fusionEKF,&tools,&estimations,&ground_truth,&ignore_radar,&ignore_laser]
               (uWS::WebSocket<uWS::SERVER> ws, char *data, size_t length,
                uWS::OpCode opCode) {
     // "42" at the start of the message means there's a websocket message event.
@@ -62,12 +78,12 @@ int main() {
           std::istringstream iss(sensor_measurement);
 
           long long timestamp;
-
           // reads first element from the current line
           string sensor_type;
           iss >> sensor_type;
 
-          if (sensor_type.compare("L") == 0) {
+          if (sensor_type.compare("L") == 0 && !ignore_laser) {
+            //std::cout << "Processing laser data" << std::endl;
             meas_package.sensor_type_ = MeasurementPackage::LASER;
             meas_package.raw_measurements_ = VectorXd(2);
             float px;
@@ -77,7 +93,8 @@ int main() {
             meas_package.raw_measurements_ << px, py;
             iss >> timestamp;
             meas_package.timestamp_ = timestamp;
-          } else if (sensor_type.compare("R") == 0) {
+          } else if (sensor_type.compare("R") == 0 && !ignore_radar) {
+            //std::cout << "Processing radar data" << std::endl;
             meas_package.sensor_type_ = MeasurementPackage::RADAR;
             meas_package.raw_measurements_ = VectorXd(3);
             float ro;
@@ -89,6 +106,10 @@ int main() {
             meas_package.raw_measurements_ << ro,theta, ro_dot;
             iss >> timestamp;
             meas_package.timestamp_ = timestamp;
+          } else {
+            string msg = "42[\"manual\",{}]";
+        	ws.send(msg.data(), msg.length(), uWS::OpCode::TEXT);
+            return;
           }
 
           float x_gt;
