@@ -140,11 +140,11 @@ If the Kalman Filter is run with only radar data(`--no-laser`), the prediction a
 ![result_dataset1_no_laser][image6]
 
 ### Kalman Filter with Radar and Laser
-When the Kalman filter uses the data from both laser and radar, the accuracy of both the position and velocity of the cyclists is improved.
-The results on dataset1 is shown below:<br>
+When the Kalman filter uses the data from **both laser and radar**, the accuracy of both the position and velocity of the cyclists is improved.
+The results on **dataset1** is shown below:<br>
 ![result_dataset1][image3]
 
-Similar performance is also seen with the dataset2 as shown below:<br>
+Similar performance is also seen with the **dataset2** as shown below:<br>
 ![result_dataset2][image4]
 
 ---
