@@ -8,21 +8,23 @@
 [image2]: ./images/linear_approximation.png "linear approximation"
 [image3]: ./images/result_dataset1.gif "results on dataset1"
 [image4]: ./images/result_dataset2.gif "results on dataset2"
+[image5]: ./images/result_dataset1_no_radar.gif "results on dataset1 with no radar"
+[image6]: ./images/result_dataset1_no_laser.gif "results on dataset1 with no radar"
 
 The objective of this project is to estimate the state of a moving object with noisy measurements from lidar and radar sensors. The state of the moving object is represented by two dimensional position p<sub>x</sub>, p<sub>y</sub> and two dimensional velocity v<sub>x</sub>, v<sub>y</sub>. The **state vector** <img src="https://latex.codecogs.com/gif.latex?\mathit{x}"/> is therefore:
 <img src="https://latex.codecogs.com/gif.latex?\begin{pmatrix}p_x\\p_y\\v_x\\v_y\end{pmatrix}"/>
 
-Udacity provided simulated radar and lidar measurements from a bicycle that moves around the target vehicle. In addition, Udacity also provided a software framework which :
+Udacity provided simulated radar and lidar measurements from a cyclist who moves around the target vehicle. In addition, Udacity also provided a software framework which :
 1. Reads in the data (sensor values as well as ground truth) from the simulator
 2. Encapsulates the data into instances of class *MeasurementPackage*
-3. Provide a SW design with entry points to:
+3. Provide a software design with entry points to:
   - Initialize Kalman filter matrices and variables
   - Predict where the cyclist is going to be after a time step
   - Update where the cyclist is based on sensor measurements
   - Measure how the Kalman filter performs by calculating the root mean squared error
 4. Returns the results back to the simulator
 
-The actual contribution of the project is the Step 3, where the standard and extended Kalman Filter functions for predicting and updating the data from Lidar and Radar respectively are implemented.
+The actual contribution from the project is the Step 3, where the standard and extended Kalman Filter functions for predicting and updating the data from Lidar and Radar respectively are implemented.
 
 ---
 
@@ -38,9 +40,9 @@ Based on the **kinematics equations** of an object in motion, the new 2D positio
 <img src="https://latex.codecogs.com/gif.latex?{v_x}'={v_x}&plus;{a_x}\Delta&space;t"/><br>
 <img src="https://latex.codecogs.com/gif.latex?{v_y}'={v_y}&plus;{a_y}\Delta&space;t"/><br>
 
-where <img src="https://latex.codecogs.com/gif.latex?\\{a_x}"/> and <img src="https://latex.codecogs.com/gif.latex?\\{a_y}"/> are random acceleration vectors with mean 0 and standard deviations  <img src="https://latex.codecogs.com/gif.latex?\sigma_{a_x}^{2}"/> and <img src="https://latex.codecogs.com/gif.latex?\sigma_{a_y}^{2}"/> respectively. In the project , both values are configured as **9.0**.
+where <img src="https://latex.codecogs.com/gif.latex?\\{a_x}"/> and <img src="https://latex.codecogs.com/gif.latex?\\{a_y}"/> are random acceleration vectors with mean 0 and standard deviations  <img src="https://latex.codecogs.com/gif.latex?\sigma_{a_x}^{2}"/> and <img src="https://latex.codecogs.com/gif.latex?\sigma_{a_y}^{2}"/> respectively. In the project , both values are configured as **9.0** as recommended in the project instructions.
 
-The state transition function shown above consists of deterministic part as well as stochastic part represented by the random acceleration vectors. A generalized version of the state transition function is shown below:
+The state transition function shown above consists of deterministic part as well as stochastic part represented by the random acceleration vectors. A generalized version of the state transition function with deterministic and stochastic parts is shown below:
 
 <img src="https://latex.codecogs.com/gif.latex?\begin{pmatrix}p_x'\\p_y'\\v_x'\\v_y'\end{pmatrix}=\begin{pmatrix}1&0&\Delta&space;t&0\\0&1&0&\Delta&space;t\\0&0&1&0\\0&0&0&1\end{pmatrix}&space;\begin{pmatrix}p_x\\p_y\\v_x\\v_y\end{pmatrix}&space;&plus;&space;\begin{pmatrix}\frac{a_{x}\Delta&space;t&space;^2}{2}\\\frac{a_{y}\Delta&space;t&space;^2}{2}\\a_{x}\Delta&space;t\\a_{y}\Delta&space;t\end{pmatrix}"/>
 
@@ -48,13 +50,12 @@ The state transition function shown above consists of deterministic part as well
 This step predicts the new state (x') and uncertainty (P') of the cyclist's position and velocity. The prediction calculation for new state is <br>
 <img src="https://latex.codecogs.com/gif.latex?{x}'={F}{x}&plus;\mathit{\nu}"/> <br>
  where **F** is the **state-transition matrix** whose product with the initial state vector gives the state vector at a later time and <img src="https://latex.codecogs.com/gif.latex?\mathit{\nu}"/> refers to the uncertainty in the prediction step or simply **process noise** which is a gaussian distribution with mean 0 and covariance Q  <img src="https://latex.codecogs.com/gif.latex?\[\nu\sim&space;N(0,Q)\]"/>. The F matrix can be derived from the generalized state function:<br>
-<img src="https://latex.codecogs.com/gif.latex?\begin{pmatrix}&space;1&0&\Delta&space;t&0\\&space;0&1&0&\Delta&space;t\\&space;0&0&1&0\\&space;0&0&0&1&space;\end{pmatrix}"/>
+<img src="https://latex.codecogs.com/gif.latex?\begin{pmatrix}1&0&\Delta&space;t&0\\0&1&0&\Delta&space;t\\0&0&1&0\\0&0&0&1\end{pmatrix}"/>
 
-
-During the transition of state, the cyclist might have changed direction. This changes the uncertainty of the prediction.
+During the transition of state, the cyclist might have changed direction and/or accelerated/decelerated. This changes the uncertainty of the prediction. The change in uncertainty is given by the following equation:<br>
 
 <img src="https://latex.codecogs.com/gif.latex?{P}'={P}{F}{P^T}&plus;{Q}"/><br>
-represents this change in uncertainty. The noise variance matrix Q is calculated as :
+The noise variance matrix Q is calculated as : <br>
 
 <img src="https://latex.codecogs.com/gif.latex?Q=\begin{pmatrix}\frac{\Delta&space;t&space;^2}{4}\sigma_{a_x}^{2}&space;&&space;0&space;&&space;\frac{\Delta&space;t&space;^3}{2}\sigma_{a_x}^{2}&space;&&space;0&space;\\&space;0&space;&&space;\frac{\Delta&space;t&space;^2}{4}\sigma_{a_y}^{2}&space;&&space;0&space;&&space;\frac{\Delta&space;t&space;^3}{2}\sigma_{a_y}^{2}\\&space;\frac{\Delta&space;t&space;^3}{2}\sigma_{a_x}^{2}&space;&&space;0&space;&&space;{\Delta&space;t&space;^2}\sigma_{a_x}^{2}&space;&&space;0\\&space;0&space;&&space;\frac{\Delta&space;t&space;^3}{2}\sigma_{a_y}^{2}&space;&&space;0&space;&&space;{\Delta&space;t^2}\sigma_{a_y}^{2}&space;\end{pmatrix}"/>
 
@@ -69,22 +70,22 @@ H_laser_ << 1, 0, 0, 0,
 Incase of Radar sensors, the predicted position and speed are mapped to the polar coordinates of range, bearing and range rate.
 ![radar_measurement_parameter][image1]
 
-The range **ρ** , is the distance to the pedestrian. The bearing **φ** is the angle between ρ and the x-axis. The range rate,  is the projection of the velocity, v, onto the line, L. In a simplified form, the the **h function** that specifies how the predicted position and speed get mapped to the polar coordinates of range, bearing and range rate is given by the following equation:
+The range **ρ** , is the distance to the pedestrian. The bearing **φ** is the angle between ρ and the x-axis. The range rate,  is the projection of the velocity, v, onto the line, L. In a simplified form, the  **h function** that specifies how the predicted position and speed get mapped to the polar coordinates of range, bearing and range rate is given by the following equation:
 
 <img src="https://latex.codecogs.com/gif.latex?h(x')=\begin{pmatrix}\rho\\\phi\\\dot{\rho}\end{pmatrix}=\begin{pmatrix}\sqrt{{p'}_{x}^{2}&plus;{p'}_{y}^{2}}\\arctan(\frac{{p'}_{y}}{{p'}_{x}})\\\frac{{p'}_{x}{v'}_{x}&plus;{p'}_{y}{v'}_{y}}{\sqrt{{p'}_{x}^{2}&plus;{p'}_{y}^{2}}}\end{pmatrix}"/>
 
 The above matrix consists of non-linear function (Eg:arctan()).
 ![linear_approximation][image2]
 
-In order to apply Gaussian distributions, this needs to be linearized by a linear function which is tangent to h at the mean location of the original gaussian distribution. This is done with the hep of multivariate Taylor series expansion. A general form of Taylor series expansion is:
+In order to apply Gaussian distributions, this needs to be linearized by a linear function which is tangent to h at the mean location of the original gaussian distribution. This is done with the help of multivariate Taylor series expansion. A general form of Taylor series expansion is:
 <img src="https://latex.codecogs.com/gif.latex?f(x)\approx&space;f(\mu)&plus;&space;\frac{\partial&space;f(\mu)&space;}{\partial&space;x}(x&space;-\mu)" /><br>
 
 As shown in the figure above, when the Taylor expansion is applied, the non-linear function is evaluated first at the mean location μ, followed by a extrapolation with the slope along μ. This slope is given by the first derivate of h, which is called the Jacobian matrix which contains the partial derivatives of H<sub>j</sub>:
 
-<img src="https://latex.codecogs.com/gif.latex?\Large&space;H_j&space;=&space;\begin{bmatrix}&space;\frac{\partial&space;\rho}{\partial&space;p_x}&space;&&space;\frac{\partial&space;\rho}{\partial&space;p_y}&space;&&space;\frac{\partial&space;\rho}{\partial&space;v_x}&space;&&space;\frac{\partial&space;\rho}{\partial&space;v_y}\\&space;\frac{\partial&space;\varphi}{\partial&space;p_x}&space;&&space;\frac{\partial&space;\varphi}{\partial&space;p_y}&space;&&space;\frac{\partial&space;\varphi}{\partial&space;v_x}&space;&&space;\frac{\partial&space;\varphi}{\partial&space;v_y}\\&space;\frac{\partial&space;\dot{\rho}}{\partial&space;p_x}&space;&&space;\frac{\partial&space;\dot{\rho}}{\partial&space;p_y}&space;&&space;\frac{\partial&space;\dot{\rho}}{\partial&space;v_x}&space;&&space;\frac{\partial&space;\dot{\rho}}{\partial&space;v_y}&space;\end{bmatrix}" title="\Large H_j = \begin{bmatrix} \frac{\partial \rho}{\partial p_x} & \frac{\partial \rho}{\partial p_y} & \frac{\partial \rho}{\partial v_x} & \frac{\partial \rho}{\partial v_y}\\ \frac{\partial \varphi}{\partial p_x} & \frac{\partial \varphi}{\partial p_y} & \frac{\partial \varphi}{\partial v_x} & \frac{\partial \varphi}{\partial v_y}\\ \frac{\partial \dot{\rho}}{\partial p_x} & \frac{\partial \dot{\rho}}{\partial p_y} & \frac{\partial \dot{\rho}}{\partial v_x} & \frac{\partial \dot{\rho}}{\partial v_y} \end{bmatrix}" /> <br>
+<img src="https://latex.codecogs.com/gif.latex?\Large&space;H_j&space;=&space;\begin{bmatrix}&space;\frac{\partial&space;\rho}{\partial&space;p_x}&space;&&space;\frac{\partial&space;\rho}{\partial&space;p_y}&space;&&space;\frac{\partial&space;\rho}{\partial&space;v_x}&space;&&space;\frac{\partial&space;\rho}{\partial&space;v_y}\\&space;\frac{\partial&space;\varphi}{\partial&space;p_x}&space;&&space;\frac{\partial&space;\varphi}{\partial&space;p_y}&space;&&space;\frac{\partial&space;\varphi}{\partial&space;v_x}&space;&&space;\frac{\partial&space;\varphi}{\partial&space;v_y}\\&space;\frac{\partial&space;\dot{\rho}}{\partial&space;p_x}&space;&&space;\frac{\partial&space;\dot{\rho}}{\partial&space;p_y}&space;&&space;\frac{\partial&space;\dot{\rho}}{\partial&space;v_x}&space;&&space;\frac{\partial&space;\dot{\rho}}{\partial&space;v_y}&space;\end{bmatrix}"/> <br>
 
 After calculating all the derivates, the final H<sub>j</sub> looks like :
-<img src="https://latex.codecogs.com/gif.latex?\Large&space;H_j&space;=&space;\begin{bmatrix}&space;\frac{p_x}{\sqrt[]{p_x^2&space;&plus;&space;p_y^2}}&space;&&space;\frac{p_y}{\sqrt[]{p_x^2&space;&plus;&space;p_y^2}}&space;&&space;0&space;&&space;0\\&space;-\frac{p_y}{p_x^2&space;&plus;&space;p_y^2}&space;&&space;\frac{p_x}{p_x^2&space;&plus;&space;p_y^2}&space;&&space;0&space;&&space;0\\&space;\frac{p_y(v_x&space;p_y&space;-&space;v_y&space;p_x)}{(p_x^2&space;&plus;&space;p_y^2)^{3/2}}&space;&&space;\frac{p_x(v_y&space;p_x&space;-&space;v_x&space;p_y)}{(p_x^2&space;&plus;&space;p_y^2)^{3/2}}&space;&&space;\frac{p_x}{\sqrt[]{p_x^2&space;&plus;&space;p_y^2}}&space;&&space;\frac{p_y}{\sqrt[]{p_x^2&space;&plus;&space;p_y^2}}\\&space;\end{bmatrix}" title="\Large H_j = \begin{bmatrix} \frac{p_x}{\sqrt[]{p_x^2 + p_y^2}} & \frac{p_y}{\sqrt[]{p_x^2 + p_y^2}} & 0 & 0\\ -\frac{p_y}{p_x^2 + p_y^2} & \frac{p_x}{p_x^2 + p_y^2} & 0 & 0\\ \frac{p_y(v_x p_y - v_y p_x)}{(p_x^2 + p_y^2)^{3/2}} & \frac{p_x(v_y p_x - v_x p_y)}{(p_x^2 + p_y^2)^{3/2}} & \frac{p_x}{\sqrt[]{p_x^2 + p_y^2}} & \frac{p_y}{\sqrt[]{p_x^2 + p_y^2}}\\ \end{bmatrix}" />
+<img src="https://latex.codecogs.com/gif.latex?\Large&space;H_j&space;=&space;\begin{bmatrix}&space;\frac{p_x}{\sqrt[]{p_x^2&space;&plus;&space;p_y^2}}&space;&&space;\frac{p_y}{\sqrt[]{p_x^2&space;&plus;&space;p_y^2}}&space;&&space;0&space;&&space;0\\&space;-\frac{p_y}{p_x^2&space;&plus;&space;p_y^2}&space;&&space;\frac{p_x}{p_x^2&space;&plus;&space;p_y^2}&space;&&space;0&space;&&space;0\\&space;\frac{p_y(v_x&space;p_y&space;-&space;v_y&space;p_x)}{(p_x^2&space;&plus;&space;p_y^2)^{3/2}}&space;&&space;\frac{p_x(v_y&space;p_x&space;-&space;v_x&space;p_y)}{(p_x^2&space;&plus;&space;p_y^2)^{3/2}}&space;&&space;\frac{p_x}{\sqrt[]{p_x^2&space;&plus;&space;p_y^2}}&space;&&space;\frac{p_y}{\sqrt[]{p_x^2&space;&plus;&space;p_y^2}}\\&space;\end{bmatrix}"/>
 
 The function `MatrixXd Tools::CalculateJacobian(const VectorXd& x_state)` performs this calculation. The code for the implementation is taken over from the class notes as-is.
 
@@ -122,6 +123,43 @@ VectorXd Tools::CalculateRMSE(const vector<VectorXd> &estimations,
 ```
 
 ## Final results
-The results on dataset1 and dataset2 are shown below:
+To evaluate the impact of radar and laser sensor in the Kalmar filter, the program is extended to support two command line flags `--no-radar` and `--no-laser`.
+
+### Kalman Filter with only Laser data
+If the Kalman Filter is run with only laser data (`--no-radar`), the prediction accuracy of position measurement is good (with reference to the performance KPI mentioned in the project), but the accuracy of the velocity measurement is not good.<br>
+```sh
+./ExtendedKF --no-radar
+```
+![result_dataset1_no_radar][image5]
+
+### Kalman Filter with only Radar data
+If the Kalman Filter is run with only radar data(`--no-laser`), the prediction accuracy of position measurement is comparatively lower, with a slight improvement in accuracy of the velocity measurement.<br>
+```sh
+./ExtendedKF --no-laser
+```
+![result_dataset1_no_laser][image6]
+
+### Kalman Filter with Radar and Laser
+When the Kalman filter uses the data from both laser and radar, the accuracy of both the position and velocity of the cyclists is improved.
+The results on dataset1 is shown below:<br>
 ![result_dataset1][image3]
+
+Similar performance is also seen with the dataset2 as shown below:<br>
 ![result_dataset2][image4]
+
+---
+## How to run the Kalman Filter?
+
+The Simulator can be downloaded [here](https://github.com/udacity/self-driving-car-sim/releases).
+
+This repository includes two files that can be used to set up and install [uWebSocketIO](https://github.com/uWebSockets/uWebSockets) for either Linux or Mac systems. For windows you can use either Docker, VMware, or even Windows 10 Bash on Ubuntu to install uWebSocketIO. Please see the uWebSocketIO Starter Guide page in the classroom within the EKF Project lesson for the required version and installation scripts.
+
+Once the install for uWebSocketIO is complete, the main program can be built and run by doing the following from the project top directory.
+
+- mkdir build
+- cd build
+- cmake ..
+- make
+- ./ExtendedKF [--no-laser] [--no-radar]
+
+---
